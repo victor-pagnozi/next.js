@@ -680,22 +680,20 @@ function getDependenciesOutOfRange(
       peerDepsKeys.includes(versionMappingKey)
     )
 
-    if (commonKeys.length > 0) {
-      for (const key of commonKeys) {
-        const peerDepVersion = peerDeps[key]
-        const { version } = versionMapping[key]
+    for (const key of commonKeys) {
+      const peerDepVersion = peerDeps[key]
+      const { version } = versionMapping[key]
 
-        if (
-          !semverSatisfies(version, peerDepVersion, {
-            includePrerelease: true,
-          })
-        ) {
-          dependenciesOutOfRange.set(key, {
-            current: version,
-            expected: peerDepVersion,
-            from: key,
-          })
-        }
+      if (
+        !semverSatisfies(version, peerDepVersion, {
+          includePrerelease: true,
+        })
+      ) {
+        dependenciesOutOfRange.set(key, {
+          current: version,
+          expected: peerDepVersion,
+          from: key,
+        })
       }
     }
   }
@@ -716,22 +714,20 @@ function getDependenciesOutOfRange(
         peerDepsKeys.includes(versionMappingKey)
       )
 
-      if (commonKeys.length > 0) {
-        for (const key of commonKeys) {
-          const peerDepVersion = peerDeps[key]
-          const { version } = versionMapping[key]
+      for (const key of commonKeys) {
+        const peerDepVersion = peerDeps[key]
+        const { version } = versionMapping[key]
 
-          if (
-            !semverSatisfies(version, peerDepVersion, {
-              includePrerelease: true,
-            })
-          ) {
-            dependenciesOutOfRange.set(key, {
-              current: version,
-              expected: peerDepVersion,
-              from: dependency,
-            })
-          }
+        if (
+          !semverSatisfies(version, peerDepVersion, {
+            includePrerelease: true,
+          })
+        ) {
+          dependenciesOutOfRange.set(key, {
+            current: version,
+            expected: peerDepVersion,
+            from: dependency,
+          })
         }
       }
     }
