@@ -60,7 +60,7 @@ impl ProcessResult {
             description: StyledString::Text(
                 r"This module doesn't have an associated type. Use a known file extension, or register a loader for it.
 
-    Read more: https://nextjs.org/docs/app/api-reference/next-config-js/turbo#webpack-loaders".into(),
+Read more: https://nextjs.org/docs/app/api-reference/next-config-js/turbo#webpack-loaders".into(),
             )
             .cell(),
         }
