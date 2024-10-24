@@ -417,7 +417,7 @@ function isUsingAppDir(projectPath: string): boolean {
  *    showing the current dev command as the initial value.
  */
 async function suggestTurbopack(packageJson: any): Promise<void> {
-  const devScript: string = packageJson.scripts['dev']
+  const devScript: string = packageJson?.scripts?.dev
 
   if (!devScript) {
     console.log(
