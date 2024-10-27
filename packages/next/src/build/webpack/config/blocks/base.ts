@@ -42,14 +42,7 @@ export const base = curry(function base(
       // original source, including columns and original variable names.
       // This is desirable so the in-browser debugger can correctly pause
       // and show scoped variables with their original names.
-      // We're using a fork of `eval-source-map`
-      config.devtool = false
-      config.plugins ??= []
-      config.plugins.push(
-        new EvalSourceMapDevToolPlugin({
-          shouldIgnorePath,
-        })
-      )
+      config.devtool = 'eval-source-map'
     }
   } else {
     if (
@@ -74,6 +67,26 @@ export const base = curry(function base(
 
   if (!config.module) {
     config.module = { rules: [] }
+  }
+
+  config.plugins ??= []
+  if (config.devtool === 'source-map') {
+    config.plugins.push(
+      new DevToolsIgnorePlugin({
+        // TODO: eval-source-map has different module paths than source-map.
+        // We're currently not actually ignore listing anything.
+        shouldIgnorePath,
+      })
+    )
+  } else if (config.devtool === 'eval-source-map') {
+    // We're using a fork of `eval-source-map`
+    config.devtool = false
+    config.plugins.push(
+      new EvalSourceMapDevToolPlugin({
+        moduleFilenameTemplate: config.output?.devtoolModuleFilenameTemplate,
+        shouldIgnorePath,
+      })
+    )
   }
 
   // TODO: add codemod for "Should not import the named export" with JSON files
