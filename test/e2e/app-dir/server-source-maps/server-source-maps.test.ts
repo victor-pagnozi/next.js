@@ -179,4 +179,27 @@ describe('app-dir - server source maps', () => {
       isNextDev ? 'Error [MyError]: Bar' : 'Error [MyError]: Bar'
     )
   })
+
+  it('should log the correct values on app-render error with edge runtime', async () => {
+    const outputIndex = next.cliOutput.length
+    await next.fetch('/rsc-edge-throw')
+
+    await retry(() => {
+      expect(next.cliOutput.slice(outputIndex)).toMatch(/Error: Boom/)
+    })
+
+    const cliOutput = stripAnsi(next.cliOutput.slice(outputIndex))
+    expect(cliOutput).toContain(
+      // TODO: Apply sourcemaps
+      isTurbopack
+        ? '\n ⨯ Error: Boom' +
+            // TODO: relative path instead of absolute path
+            '\n    at throwError (/'
+        : '\n ⨯ Error: Boom' +
+            '\n    at throwError (webpack-internal:///(rsc)/./app/rsc-edge-throw/page.js:10:11)' +
+            '\n    at Page (webpack-internal:///(rsc)/./app/rsc-edge-throw/page.js:14:5) {' +
+            "\n  digest: '"
+    )
+    expect(cliOutput).toMatch(/digest: '\d+'/)
+  })
 })
