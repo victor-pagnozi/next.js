@@ -6,12 +6,9 @@ import DevToolsIgnorePlugin from '../../plugins/devtools-ignore-list-plugin'
 import EvalSourceMapDevToolPlugin from '../../plugins/eval-source-map-dev-tool-plugin'
 
 function shouldIgnorePath(modulePath: string): boolean {
-  // TODO: How to ignore list 'webpack:///../../../src/shared/lib/is-thenable.ts'
   return (
     modulePath.includes('node_modules') ||
-    // would filter 'webpack://_N_E/./app/page.tsx'
-    // modulePath.startsWith('webpack://_N_E/') ||
-    // e.g. 'webpack:///external commonjs "next/dist/compiled/next-server/app-page.runtime.dev.js"'
+    // Only relevant for when Next.js is symlinked e.g. in the Next.js monorepo
     modulePath.includes('next/dist')
   )
 }
@@ -73,8 +70,6 @@ export const base = curry(function base(
   if (config.devtool === 'source-map') {
     config.plugins.push(
       new DevToolsIgnorePlugin({
-        // TODO: eval-source-map has different module paths than source-map.
-        // We're currently not actually ignore listing anything.
         shouldIgnorePath,
       })
     )
