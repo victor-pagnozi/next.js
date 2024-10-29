@@ -60,6 +60,38 @@ describe('app-dir - server source maps', () => {
     }
   })
 
+  fit('thrown SSR errors', async () => {
+    await next.render('/ssr-throw')
+
+    if (isNextDev) {
+      await retry(() => {
+        expect(normalizeCliOutput(next.cliOutput)).toContain('Error: Boom')
+      })
+
+      expect(normalizeCliOutput(next.cliOutput)).toContain(
+        isTurbopack
+          ? '\n ⨯ Error: Boom' +
+              // FIXME: Turbopack has no sourcemapped location and instead shows the absolute path.
+              // Module.findSourceMap returns undefined for this module.
+              '\n    at throwError (/'
+          : '\n ⨯ Error: Boom' +
+              '\n    at throwError (app/ssr-throw/page.js:6:8)' +
+              // FIXME: Method name should be "Page"
+              '\n    at throwError (app/ssr-throw/page.js:11:2)' +
+              '\n  4 |' +
+              '\n  5 | function throwError() {' +
+              "\n> 6 |   throw new Error('Boom')" +
+              '\n    |        ^' +
+              '\n  7 | }' +
+              '\n  8 |' +
+              '\n  9 | export default async function Page() { {' +
+              "\n  digest: '"
+      )
+    } else {
+      // TODO: Test `next build` with `--enable-source-maps`.
+    }
+  })
+
   it('logged errors have a sourcemapped `cause`', async () => {
     await next.render('/rsc-error-log-cause')
 
