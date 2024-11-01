@@ -168,7 +168,10 @@ import './clean-async-snapshot.external'
 import { INFINITE_CACHE } from '../../lib/constants'
 import { createComponentStylesAndScripts } from './create-component-styles-and-scripts'
 import { parseLoaderTree } from './parse-loader-tree'
-import { ResumeDataCache } from '../use-cache/resume-data-cache'
+import {
+  createMutableResumeDataCache,
+  sealResumeDataCache,
+} from '../resume-data-cache/resume-data-cache'
 
 export type GetDynamicParamFromSegment = (
   // [slug] / [[slug]] / [...slug]
@@ -609,12 +612,12 @@ async function warmupDevRender(
 
   // We're doing a dev warmup, so we should create a new resume data cache so
   // we can fill it.
-  const resumeDataCache = new ResumeDataCache()
+  const mutableResumeDataCache = createMutableResumeDataCache()
 
   // Attach this to the request store so that it can be used during the
   // render.
   const { requestStore } = ctx
-  requestStore.resumeDataCache = resumeDataCache
+  requestStore.mutableResumeDataCache = mutableResumeDataCache
 
   const rscPayload = await workUnitAsyncStorage.run(
     requestStore,
@@ -649,7 +652,7 @@ async function warmupDevRender(
   // lift the warmup pathway outside of renderToHTML... but for now this suffices
   return new FlightRenderResult('', {
     fetchMetrics: ctx.workStore.fetchMetrics,
-    resumeDataCache,
+    immutableResumeDataCache: sealResumeDataCache(mutableResumeDataCache),
   })
 }
 
@@ -1466,7 +1469,7 @@ export const renderToHTMLOrFlight: AppPageRender = (
     url,
     implicitTags,
     renderOpts.onUpdateCookies,
-    renderOpts.resumeDataCache,
+    renderOpts.immutableResumeDataCache,
     renderOpts.previewProps,
     isHmrRefresh,
     serverComponentsHmrCache
@@ -1981,7 +1984,7 @@ async function spawnDynamicValidationInDev(
   const firstAttemptServerController = new AbortController()
   let serverDynamicTracking = createDynamicTrackingState(false)
 
-  const resumeDataCache = new ResumeDataCache()
+  const mutableResumeDataCache = createMutableResumeDataCache()
 
   const firstAttemptServerPrerenderStore: PrerenderStore = {
     type: 'prerender',
@@ -2003,7 +2006,7 @@ async function spawnDynamicValidationInDev(
     tags: [],
     // Dev only property that allows certain logs to be suppressed
     validating: true,
-    resumeDataCache,
+    mutableResumeDataCache,
   }
 
   const firstAttemptRSCPayload = await workUnitAsyncStorage.run(
@@ -2051,7 +2054,7 @@ async function spawnDynamicValidationInDev(
     tags: [],
     // Dev only property that allows certain logs to be suppressed
     validating: true,
-    resumeDataCache,
+    mutableResumeDataCache,
   }
 
   const secondAttemptRSCPayload = await workUnitAsyncStorage.run(
@@ -2113,7 +2116,7 @@ async function spawnDynamicValidationInDev(
     stale: INFINITE_CACHE,
     tags: [],
     validating: true,
-    resumeDataCache,
+    mutableResumeDataCache,
   }
 
   const [firstAttemptReactServerStream, secondAttemptReactServerStream] =
@@ -2206,7 +2209,7 @@ async function spawnDynamicValidationInDev(
       stale: INFINITE_CACHE,
       tags: [],
       validating: true,
-      resumeDataCache,
+      mutableResumeDataCache,
     }
 
     try {
@@ -2484,7 +2487,7 @@ async function prerenderToStream(
         // performing a fresh prerender. If we get to implementing the
         // prerendering of an already prerendered page, we should use the passed
         // resume data cache instead.
-        const resumeDataCache = new ResumeDataCache()
+        const mutableResumeDataCache = createMutableResumeDataCache()
 
         const initialServerPrerenderStore: PrerenderStore = (prerenderStore = {
           type: 'prerender',
@@ -2498,7 +2501,7 @@ async function prerenderToStream(
           expire: INFINITE_CACHE,
           stale: INFINITE_CACHE,
           tags: [...ctx.requestStore.implicitTags],
-          resumeDataCache,
+          mutableResumeDataCache,
         })
 
         // We're not going to use the result of this render because the only time it could be used
@@ -2585,7 +2588,7 @@ async function prerenderToStream(
             expire: INFINITE_CACHE,
             stale: INFINITE_CACHE,
             tags: [...ctx.requestStore.implicitTags],
-            resumeDataCache,
+            mutableResumeDataCache,
           }
 
           const prerender = require('react-dom/static.edge')
@@ -2665,7 +2668,7 @@ async function prerenderToStream(
           expire: INFINITE_CACHE,
           stale: INFINITE_CACHE,
           tags: [...ctx.requestStore.implicitTags],
-          resumeDataCache,
+          mutableResumeDataCache,
         })
 
         const finalAttemptRSCPayload = await workUnitAsyncStorage.run(
@@ -2722,7 +2725,7 @@ async function prerenderToStream(
           expire: INFINITE_CACHE,
           stale: INFINITE_CACHE,
           tags: [...ctx.requestStore.implicitTags],
-          resumeDataCache,
+          mutableResumeDataCache,
         }
 
         let clientIsDynamic = false
@@ -2801,7 +2804,9 @@ async function prerenderToStream(
           tracingMetadata: tracingMetadata,
         })
 
-        metadata.resumeDataCache = resumeDataCache
+        metadata.immutableResumeDataCache = sealResumeDataCache(
+          mutableResumeDataCache
+        )
         metadata.flightData = await streamToBuffer(reactServerResult.asStream())
 
         if (serverIsDynamic || clientIsDynamic) {
@@ -2931,7 +2936,7 @@ async function prerenderToStream(
         const initialServerRenderController = new AbortController()
 
         const cacheSignal = new CacheSignal()
-        const resumeDataCache = new ResumeDataCache()
+        const mutableResumeDataCache = createMutableResumeDataCache()
 
         const initialServerPrerenderStore: PrerenderStore = (prerenderStore = {
           type: 'prerender',
@@ -2945,7 +2950,7 @@ async function prerenderToStream(
           expire: INFINITE_CACHE,
           stale: INFINITE_CACHE,
           tags: [...ctx.requestStore.implicitTags],
-          resumeDataCache,
+          mutableResumeDataCache,
         })
 
         const initialClientController = new AbortController()
@@ -2961,7 +2966,7 @@ async function prerenderToStream(
           expire: INFINITE_CACHE,
           stale: INFINITE_CACHE,
           tags: [...ctx.requestStore.implicitTags],
-          resumeDataCache,
+          mutableResumeDataCache,
         })
 
         // We're not going to use the result of this render because the only time it could be used
@@ -3104,7 +3109,7 @@ async function prerenderToStream(
           expire: INFINITE_CACHE,
           stale: INFINITE_CACHE,
           tags: [...ctx.requestStore.implicitTags],
-          resumeDataCache,
+          mutableResumeDataCache,
         })
 
         let clientIsDynamic = false
@@ -3127,7 +3132,7 @@ async function prerenderToStream(
           expire: INFINITE_CACHE,
           stale: INFINITE_CACHE,
           tags: [...ctx.requestStore.implicitTags],
-          resumeDataCache,
+          mutableResumeDataCache,
         })
 
         const finalServerPayload = await workUnitAsyncStorage.run(
@@ -3256,7 +3261,9 @@ async function prerenderToStream(
           }
         }
 
-        metadata.resumeDataCache = resumeDataCache
+        metadata.immutableResumeDataCache = sealResumeDataCache(
+          mutableResumeDataCache
+        )
         metadata.flightData = await streamToBuffer(
           serverPrerenderStreamResult.asStream()
         )
@@ -3300,7 +3307,7 @@ async function prerenderToStream(
         renderOpts.isDebugDynamicAccesses
       )
 
-      const resumeDataCache = new ResumeDataCache()
+      const mutableResumeDataCache = createMutableResumeDataCache()
       const reactServerPrerenderStore: PrerenderStore = (prerenderStore = {
         type: 'prerender-ppr',
         phase: 'render',
@@ -3310,7 +3317,7 @@ async function prerenderToStream(
         expire: INFINITE_CACHE,
         stale: INFINITE_CACHE,
         tags: [...ctx.requestStore.implicitTags],
-        resumeDataCache,
+        mutableResumeDataCache,
       })
       const RSCPayload = await workUnitAsyncStorage.run(
         reactServerPrerenderStore,
@@ -3342,7 +3349,7 @@ async function prerenderToStream(
         expire: INFINITE_CACHE,
         stale: INFINITE_CACHE,
         tags: [...ctx.requestStore.implicitTags],
-        resumeDataCache,
+        mutableResumeDataCache,
       }
       const prerender = require('react-dom/static.edge')
         .prerender as (typeof import('react-dom/static.edge'))['prerender']
@@ -3387,7 +3394,9 @@ async function prerenderToStream(
       if (shouldGenerateStaticFlightData(workStore)) {
         metadata.flightData = flightData
       }
-      metadata.resumeDataCache = resumeDataCache
+      metadata.immutableResumeDataCache = sealResumeDataCache(
+        mutableResumeDataCache
+      )
 
       /**
        * When prerendering there are three outcomes to consider
