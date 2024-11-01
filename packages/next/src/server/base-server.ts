@@ -603,6 +603,7 @@ export default abstract class Server<
         clientTraceMetadata: this.nextConfig.experimental.clientTraceMetadata,
         after: this.nextConfig.experimental.after ?? false,
         dynamicIO: this.nextConfig.experimental.dynamicIO ?? false,
+        inlineCss: this.nextConfig.experimental.inlineCss ?? false,
       },
       onInstrumentationRequestError:
         this.instrumentationOnRequestError.bind(this),
@@ -2493,6 +2494,7 @@ export default abstract class Server<
         onAfterTaskError: undefined,
         // only available in dev
         setAppIsrStatus: (this as any).setAppIsrStatus,
+        distDir: this.distDir,
       }
 
       if (isDebugStaticShell || isDebugDynamicAccesses) {
