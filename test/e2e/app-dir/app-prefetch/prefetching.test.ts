@@ -232,7 +232,7 @@ describe('app dir - prefetching', () => {
     })
 
     const prefetchResponse = await response.text()
-    expect(prefetchResponse).toContain('Page Data!')
+    expect(prefetchResponse).not.toContain('Page Data!')
     expect(prefetchResponse).not.toContain('Layout Data!')
     expect(prefetchResponse).not.toContain('Loading Prefetch Auto')
   })
@@ -268,7 +268,7 @@ describe('app dir - prefetching', () => {
 
     const prefetchResponse = await response.text()
     expect(prefetchResponse).not.toContain('Page Data!')
-    expect(prefetchResponse).toContain('Loading Prefetch Auto')
+    expect(prefetchResponse).toContain('Loading Slug Prefetch Auto')
   })
 
   it('should not re-render error component when triggering a prefetch action', async () => {

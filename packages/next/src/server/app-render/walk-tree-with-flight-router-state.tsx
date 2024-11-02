@@ -117,8 +117,7 @@ export async function walkTreeWithFlightRouterState({
   const shouldSkipComponentTree =
     !experimental.isRoutePPREnabled &&
     isPrefetch &&
-    !Boolean(modules.loading) &&
-    !hasLoadingComponentInTree(loaderTree)
+    (!Boolean(modules.loading) || !hasLoadingComponentInTree(loaderTree))
 
   if (!parentRendered && renderComponentsOnThisLevel) {
     const overriddenSegment =
