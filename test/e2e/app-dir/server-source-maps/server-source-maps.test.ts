@@ -222,14 +222,21 @@ describe('app-dir - server source maps', () => {
 
     const cliOutput = stripAnsi(next.cliOutput.slice(outputIndex))
     expect(cliOutput).toContain(
-      // TODO: Apply sourcemaps
       isTurbopack
         ? '\n ⨯ Error: Boom' +
             // TODO: relative path instead of absolute path
             '\n    at throwError (/'
         : '\n ⨯ Error: Boom' +
-            '\n    at throwError (webpack-internal:///(rsc)/./app/rsc-edge-throw/page.js:10:11)' +
-            '\n    at Page (webpack-internal:///(rsc)/./app/rsc-edge-throw/page.js:14:5) {' +
+            '\n    at throwError (app/rsc-edge-throw/page.js:6:8)' +
+            // FIXME: Method name should be "Page"
+            '\n    at throwError (app/rsc-edge-throw/page.js:11:2)' +
+            '\n  4 |' +
+            '\n  5 | function throwError() {' +
+            "\n> 6 |   throw new Error('Boom')" +
+            '\n    |        ^' +
+            '\n  7 | }' +
+            '\n  8 |' +
+            '\n  9 | export default async function Page() { {' +
             "\n  digest: '"
     )
     expect(cliOutput).toMatch(/digest: '\d+'/)
