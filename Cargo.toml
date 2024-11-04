@@ -153,12 +153,12 @@ indoc = "2.0.0"
 itertools = "0.10.5"
 lazy_static = "1.4.0"
 log = "0.4.17"
-lightningcss = { version = "1.0.0-alpha.59", features = [
+lightningcss = { version = "1.0.0-alpha.60", features = [
   "serde",
   "visitor",
   "into_owned",
 ] }
-lightningcss-napi = { version = "0.3.0", default-features = false, features = [
+lightningcss-napi = { version = "0.4.0", default-features = false, features = [
   "visitor"
 ]}
 markdown = "1.0.0-alpha.18"
